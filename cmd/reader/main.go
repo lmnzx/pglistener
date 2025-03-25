@@ -24,7 +24,7 @@ func run() error {
 	}
 
 	const channel = "users_channel"
-	listener, err := pglistener.NewPostgresListener(postgresDsn, channel)
+	listener, err := pglistener.NewPostgresListener(ctx, postgresDsn, channel)
 	if err != nil {
 		return fmt.Errorf("creating postgres listener: %v", err)
 	}
@@ -38,8 +38,8 @@ func run() error {
 
 	id := uuid.MustParse("011bf3b5-7496-4e46-a93a-339781b12a94")
 
-	// ttl := time.Second * 15
-	cache := pglistener.NewInMemoryCache(ctx, listener, userStore.ById)
+	ttl := time.Second * 15
+	cache := pglistener.NewInMemoryCache(ctx, listener, userStore.ById, ttl)
 
 	ticker := time.NewTicker(time.Second * 5)
 	defer ticker.Stop()

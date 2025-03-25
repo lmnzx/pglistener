@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"log"
@@ -11,6 +12,7 @@ import (
 )
 
 func main() {
+	ctx := context.Background()
 	postgresDsn := os.Getenv("POSTGRES_URL")
 	if postgresDsn == "" {
 		log.Fatal("POSTGRES_URL environment variable not set")
@@ -18,7 +20,7 @@ func main() {
 
 	const channel = "users_channel"
 
-	listener, err := pglistener.NewPostgresListener(postgresDsn, channel)
+	listener, err := pglistener.NewPostgresListener(ctx, postgresDsn, channel)
 	if err != nil {
 		log.Fatal(err)
 	}

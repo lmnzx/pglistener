@@ -34,7 +34,7 @@ func NewPostgresDb(dsn string) (*sql.DB, error) {
 	return db, nil
 }
 
-func NewPostgresListener(dsn string, channel string) (*pq.Listener, error) {
+func NewPostgresListener(ctx context.Context, dsn string, channel string) (*pq.Listener, error) {
 	reportError := func(event pq.ListenerEventType, err error) {
 		if err != nil {
 			fmt.Printf("postgres listener error %v\n", err.Error())
@@ -43,6 +43,11 @@ func NewPostgresListener(dsn string, channel string) (*pq.Listener, error) {
 	}
 
 	listener := pq.NewListener(dsn, time.Second*5, time.Minute, reportError)
+
+	go func() {
+		<-ctx.Done()
+		listener.Close()
+	}()
 
 	if err := listener.Listen(channel); err != nil {
 		return nil, err
