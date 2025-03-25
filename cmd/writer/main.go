@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/brianvoe/gofakeit/v7"
+	"github.com/google/uuid"
 )
 
 func main() {
@@ -25,11 +26,14 @@ func main() {
 	}
 
 	store := pglistener.NewUserStore(db)
-	u, err := store.Create(ctx, pglistener.CreateUserParams{
-		FirstName: gofakeit.FirstName(),
-		LastName:  gofakeit.LastName(),
-		Email:     gofakeit.Email(),
-	})
+	// u, err := store.Create(ctx, pglistener.CreateUserParams{
+	// 	FirstName: gofakeit.FirstName(),
+	// 	LastName:  gofakeit.LastName(),
+	// 	Email:     gofakeit.Email(),
+	// })
+
+	id := uuid.MustParse("011bf3b5-7496-4e46-a93a-339781b12a94")
+	u, err := store.ById(ctx, id)
 	if err != nil {
 		log.Fatal(err)
 	}

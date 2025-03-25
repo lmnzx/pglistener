@@ -6,6 +6,8 @@ import (
 	"log"
 	"os"
 	pglistener "pqlistener"
+
+	"github.com/google/uuid"
 )
 
 func main() {
@@ -24,7 +26,7 @@ func main() {
 	for {
 		select {
 		case n := <-listener.Notify:
-			var event pglistener.ChangeDataCaptureEvent[*pglistener.User]
+			var event pglistener.ChangeDataCaptureEvent[uuid.UUID, *pglistener.User]
 			if err := json.Unmarshal([]byte(n.Extra), &event); err != nil {
 				log.Fatal(err)
 			}

@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"log/slog"
 	"time"
 
 	"github.com/google/uuid"
@@ -11,7 +12,11 @@ import (
 	_ "github.com/lib/pq"
 )
 
-type ChangeDataCaptureEvent[T any] struct {
+type Keyer[K comparable] interface {
+	Key() K
+}
+
+type ChangeDataCaptureEvent[K comparable, T Keyer[K]] struct {
 	Table  string `json:"table"`
 	Action string `json:"action"`
 	Data   T      `json:"data"`
@@ -57,6 +62,10 @@ type User struct {
 	Email     string     `json:"email"`
 	CreatedAt time.Time  `json:"created_at"`
 	UpdatedAt *time.Time `json:"updated_at"`
+}
+
+func (u *User) Key() uuid.UUID {
+	return u.Id
 }
 
 type UserStore struct {
@@ -110,5 +119,18 @@ func (s *UserStore) Update(ctx context.Context, user *User) (*User, error) {
 	if row.Err() != nil {
 		return nil, fmt.Errorf("failed to update user: %v", row.Err())
 	}
+	return s.scan(row)
+}
+
+func (s *UserStore) ById(ctx context.Context, id uuid.UUID) (*User, error) {
+	slog.Info("user_store fetching user form db", "id", id)
+
+	const selectQuery = `SELECT * FROM users WHERE id=$1`
+
+	row := s.db.QueryRowContext(ctx, selectQuery, id)
+	if row.Err() != nil {
+		return nil, fmt.Errorf("failed to get user by id: %v", row.Err())
+	}
+
 	return s.scan(row)
 }
