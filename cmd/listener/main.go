@@ -4,12 +4,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
-	"log/slog"
 	"os"
 	pglistener "pqlistener"
-	"time"
-
-	"github.com/lib/pq"
 )
 
 func main() {
@@ -20,24 +16,8 @@ func main() {
 
 	const channel = "users_channel"
 
-	listener := pq.NewListener(postgresDsn, time.Second*5, time.Minute, func(event pq.ListenerEventType, err error) {
-		switch event {
-		case pq.ListenerEventConnected:
-			slog.Info("ListenerEventConnected")
-		case pq.ListenerEventDisconnected:
-			slog.Info("ListenerEventDisconnected")
-		case pq.ListenerEventReconnected:
-			slog.Info("ListenerEventReconnected")
-		case pq.ListenerEventConnectionAttemptFailed:
-			slog.Info("ListenerEventConnectionAttemptFailed")
-		}
-	})
-
-	if err := listener.Listen(channel); err != nil {
-		log.Fatal(err)
-	}
-
-	if err := listener.Ping(); err != nil {
+	listener, err := pglistener.NewPostgresListener(postgresDsn, channel)
+	if err != nil {
 		log.Fatal(err)
 	}
 

@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/lib/pq"
 	_ "github.com/lib/pq"
 )
 
@@ -26,6 +27,27 @@ func NewPostgresDb(dsn string) (*sql.DB, error) {
 	}
 
 	return db, nil
+}
+
+func NewPostgresListener(dsn string, channel string) (*pq.Listener, error) {
+	reportError := func(event pq.ListenerEventType, err error) {
+		if err != nil {
+			fmt.Printf("postgres listener error %v\n", err.Error())
+		}
+
+	}
+
+	listener := pq.NewListener(dsn, time.Second*5, time.Minute, reportError)
+
+	if err := listener.Listen(channel); err != nil {
+		return nil, err
+	}
+
+	if err := listener.Ping(); err != nil {
+		return nil, err
+	}
+
+	return listener, nil
 }
 
 type User struct {
