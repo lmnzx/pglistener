@@ -10,6 +10,12 @@ import (
 	_ "github.com/lib/pq"
 )
 
+type ChangeDataCaptureEvent[T any] struct {
+	Table  string `json:"table"`
+	Action string `json:"action"`
+	Data   T      `json:"data"`
+}
+
 func NewPostgresDb(dsn string) (*sql.DB, error) {
 	db, err := sql.Open("postgres", dsn)
 	if err != nil {
